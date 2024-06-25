@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>report.html</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>report.html</h1>
+    <p>Report generated on 24-Jun-2024 at 22:19:17 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>14 tests ran in 93.50 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">7 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">7 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>, <input checked="true" class="filter" data-test-result="rerun" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="rerun">0 rerun</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_input100.py::test_characters[С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾-С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾]</td>
+          <td class="col-duration">5.56</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;a2ad5f8a35e4e7b4c43c7e9a6a35af62&quot;)&gt;<br/>special_string = &#x27;С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾&#x27;<br/>expected_result = &#x27;С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string,expected_result&quot;, [<br/>        (&quot;С���人&quot;*10,&quot;С���人&quot;*10),<br/>        (&quot;12345&quot;*18,&quot;12345&quot;*18),<br/>        (&quot;abcde&quot;*20,&quot;abcde&quot;*20),<br/>        (&quot;С�׹�˾&quot;*26,&quot;С�׹�˾&quot;*20),<br/>        (&quot;1234567890&quot;*11,&quot;1234567890&quot;*10),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string,expected_result):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        sleep(2)<br/>        # ��ȡ�������ı�����<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>    <br/>        # ��֤�Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;С�׹�˾С�׹�˾С�׹�˾...˾С�׹�˾С�׹�˾С�׹�˾&#x27; == &#x27;С�׹�˾С�׹�˾С�׹�˾...˾С�׹�˾С�׹�˾С�׹�˾&#x27;</span><br/><span class="error">E         Skipping 69 identical leading characters in diff, use -v to show</span><br/><span class="error">E         - �׹�˾С�׹�˾С�׹�˾</span><br/><span class="error">E         + �׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾С�׹�˾</span><br/><br/>testcases\test_input100.py:38: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_input100.py::test_characters[12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890-1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890]</td>
+          <td class="col-duration">5.51</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;156fff13edab38ef69a195b8b8b1aa46&quot;)&gt;<br/>special_string = &#x27;12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890&#x27;<br/>expected_result = &#x27;1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string,expected_result&quot;, [<br/>        (&quot;С���人&quot;*10,&quot;С���人&quot;*10),<br/>        (&quot;12345&quot;*18,&quot;12345&quot;*18),<br/>        (&quot;abcde&quot;*20,&quot;abcde&quot;*20),<br/>        (&quot;С�׹�˾&quot;*26,&quot;С�׹�˾&quot;*20),<br/>        (&quot;1234567890&quot;*11,&quot;1234567890&quot;*10),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string,expected_result):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        sleep(2)<br/>        # ��ȡ�������ı�����<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>    <br/>        # ��֤�Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;123456789012...8901234567890&#x27; == &#x27;123456789012...8901234567890&#x27;</span><br/><span class="error">E         Skipping 89 identical leading characters in diff, use -v to show</span><br/><span class="error">E         - 01234567890</span><br/><span class="error">E         + 012345678901234567890</span><br/><br/>testcases\test_input100.py:38: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_read20.py::test_characters[abcdeabcdeabcdeabcdeabcde]</td>
+          <td class="col-duration">5.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;2e9bde3f7b88e7d897194b77e257eec2&quot;)&gt;, special_string = &#x27;abcdeabcdeabcdeabcdeabcde&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string&quot;, [<br/>        (&quot;С�׹�˾&quot;*4),<br/>        (&quot;12345&quot;*4),<br/>        (&quot;12*-&quot;*5),<br/>        (&quot;abcde&quot;*5),<br/>        (&quot;1234567890&quot;*3),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        &#x27;&#x27;&#x27;search_text1 = search_box.get_attribute(&quot;value&quot;)<br/>        print(len(search_text1))&#x27;&#x27;&#x27;<br/>    <br/>        # ������ٶ�һ�¡���ť<br/>        search_button = driver.find_element(By.ID,&quot;su&quot;)<br/>        search_button.click()<br/>    <br/>        sleep(2)<br/>        # ��ȡʵ�ʵ������ؼ���<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>        #print(driver.current_url)<br/>        #print(len(search_text))<br/>    <br/>        # ��ȡԤ��<br/>        expected_result = special_string[:100].replace(&quot;&lt;&quot;, &quot;&quot;).replace(&quot;&gt;&quot;, &quot;&quot;)[:20]<br/>        #print(expected_result)<br/>    <br/>        # ���Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;abcdeabcdeabcdeabcdeabcde&#x27; == &#x27;abcdeabcdeabcdeabcde&#x27;</span><br/><span class="error">E         - abcdeabcdeabcdeabcde</span><br/><span class="error">E         + abcdeabcdeabcdeabcdeabcde</span><br/><span class="error">E         ?                     +++++</span><br/><br/>testcases\test_read20.py:51: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_read20.py::test_characters[123456789012345678901234567890]</td>
+          <td class="col-duration">5.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;eaeb2e2007fc4f4399880bb0cc06acba&quot;)&gt;, special_string = &#x27;123456789012345678901234567890&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string&quot;, [<br/>        (&quot;С�׹�˾&quot;*4),<br/>        (&quot;12345&quot;*4),<br/>        (&quot;12*-&quot;*5),<br/>        (&quot;abcde&quot;*5),<br/>        (&quot;1234567890&quot;*3),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        &#x27;&#x27;&#x27;search_text1 = search_box.get_attribute(&quot;value&quot;)<br/>        print(len(search_text1))&#x27;&#x27;&#x27;<br/>    <br/>        # ������ٶ�һ�¡���ť<br/>        search_button = driver.find_element(By.ID,&quot;su&quot;)<br/>        search_button.click()<br/>    <br/>        sleep(2)<br/>        # ��ȡʵ�ʵ������ؼ���<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>        #print(driver.current_url)<br/>        #print(len(search_text))<br/>    <br/>        # ��ȡԤ��<br/>        expected_result = special_string[:100].replace(&quot;&lt;&quot;, &quot;&quot;).replace(&quot;&gt;&quot;, &quot;&quot;)[:20]<br/>        #print(expected_result)<br/>    <br/>        # ���Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;123456789012...8901234567890&#x27; == &#x27;12345678901234567890&#x27;</span><br/><span class="error">E         - 12345678901234567890</span><br/><span class="error">E         + 123456789012345678901234567890</span><br/><span class="error">E         ?                     ++++++++++</span><br/><br/>testcases\test_read20.py:51: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_readsign.py::test_characters[as&gt;df1fgas&gt;df1fg]</td>
+          <td class="col-duration">5.24</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;4f7c93479b89f6739a4f7ad51adcfd2c&quot;)&gt;, special_string = &#x27;as&gt;df1fgas&gt;df1fg&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string&quot;, [<br/>        (&quot;123456&quot;*3),<br/>        (&quot;as&gt;df1fg&quot;*2),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        &#x27;&#x27;&#x27;search_text1 = search_box.get_attribute(&quot;value&quot;)<br/>        print(len(search_text1))&#x27;&#x27;&#x27;<br/>    <br/>        # ������ٶ�һ�¡���ť<br/>        search_button = driver.find_element(By.ID,&quot;su&quot;)<br/>        search_button.click()<br/>    <br/>        sleep(2)<br/>        # ��ȡʵ�ʵ������ؼ���<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>    <br/>        # ��ȡԤ��<br/>        expected_result = special_string[:100].replace(&quot;&lt;&quot;, &quot;&quot;).replace(&quot;&gt;&quot;, &quot;&quot;)[:20]<br/>    <br/>        # ���Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;as&gt;df1fgas&gt;df1fg&#x27; == &#x27;asdf1fgasdf1fg&#x27;</span><br/><span class="error">E         - asdf1fgasdf1fg</span><br/><span class="error">E         + as&gt;df1fgas&gt;df1fg</span><br/><span class="error">E         ?   +       +</span><br/><br/>testcases\test_readsign.py:47: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_readsign.py::test_characters[as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg0]</td>
+          <td class="col-duration">5.09</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;d853cd38704345c755c48f870a729be6&quot;)&gt;, special_string = &#x27;as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string&quot;, [<br/>        (&quot;123456&quot;*3),<br/>        (&quot;as&gt;df1fg&quot;*2),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        &#x27;&#x27;&#x27;search_text1 = search_box.get_attribute(&quot;value&quot;)<br/>        print(len(search_text1))&#x27;&#x27;&#x27;<br/>    <br/>        # ������ٶ�һ�¡���ť<br/>        search_button = driver.find_element(By.ID,&quot;su&quot;)<br/>        search_button.click()<br/>    <br/>        sleep(2)<br/>        # ��ȡʵ�ʵ������ؼ���<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>    <br/>        # ��ȡԤ��<br/>        expected_result = special_string[:100].replace(&quot;&lt;&quot;, &quot;&quot;).replace(&quot;&gt;&quot;, &quot;&quot;)[:20]<br/>    <br/>        # ���Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg&#x27; == &#x27;asdffgasdffgasdffg&#x27;</span><br/><span class="error">E         - asdffgasdffgasdffg</span><br/><span class="error">E         + as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg</span><br/><span class="error">E         ?   +  +    +  +    +  +</span><br/><br/>testcases\test_readsign.py:47: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/test_readsign.py::test_characters[as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg1]</td>
+          <td class="col-duration">5.42</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">driver = &lt;selenium.webdriver.chrome.webdriver.WebDriver (session=&quot;38f2c17f49399b86475fee40271545a0&quot;)&gt;, special_string = &#x27;as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg&#x27;<br/><br/>    @pytest.mark.parametrize(&quot;special_string&quot;, [<br/>        (&quot;123456&quot;*3),<br/>        (&quot;as&gt;df1fg&quot;*2),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>        (&quot;as&gt;df&lt;fg&quot;*3),<br/>    ])<br/>    <br/>    def test_characters(driver,special_string):<br/>        # �򿪰ٶ���ҳ,�������<br/>        driver.get(url)<br/>        driver.maximize_window()<br/>    <br/>        # ��λ�ٶ�����������<br/>        search_box = driver.find_element(By.ID,&quot;kw&quot;)<br/>        search_box.send_keys(special_string)<br/>    <br/>        &#x27;&#x27;&#x27;search_text1 = search_box.get_attribute(&quot;value&quot;)<br/>        print(len(search_text1))&#x27;&#x27;&#x27;<br/>    <br/>        # ������ٶ�һ�¡���ť<br/>        search_button = driver.find_element(By.ID,&quot;su&quot;)<br/>        search_button.click()<br/>    <br/>        sleep(2)<br/>        # ��ȡʵ�ʵ������ؼ���<br/>        search_text = search_box.get_attribute(&quot;value&quot;)<br/>    <br/>        # ��ȡԤ��<br/>        expected_result = special_string[:100].replace(&quot;&lt;&quot;, &quot;&quot;).replace(&quot;&gt;&quot;, &quot;&quot;)[:20]<br/>    <br/>        # ���Ƿ����Ԥ��<br/>&gt;       assert search_text == expected_result<br/><span class="error">E       AssertionError: assert &#x27;as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg&#x27; == &#x27;asdffgasdffgasdffg&#x27;</span><br/><span class="error">E         - asdffgasdffgasdffg</span><br/><span class="error">E         + as&gt;df&lt;fgas&gt;df&lt;fgas&gt;df&lt;fg</span><br/><span class="error">E         ?   +  +    +  +    +  +</span><br/><br/>testcases\test_readsign.py:47: AssertionError<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_input100.py::test_characters[С���人С���人С���人С���人С���人С���人С���人С���人С���人С���人-С���人С���人С���人С���人С���人С���人С���人С���人С���人С���人]</td>
+          <td class="col-duration">5.34</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_input100.py::test_characters[123451234512345123451234512345123451234512345123451234512345123451234512345123451234512345-123451234512345123451234512345123451234512345123451234512345123451234512345123451234512345]</td>
+          <td class="col-duration">5.26</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_input100.py::test_characters[abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde-abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde]</td>
+          <td class="col-duration">5.36</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_read20.py::test_characters[С�׹�˾С�׹�˾С�׹�˾С�׹�˾]</td>
+          <td class="col-duration">5.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_read20.py::test_characters[12345123451234512345]</td>
+          <td class="col-duration">5.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_read20.py::test_characters[12*-12*-12*-12*-12*-]</td>
+          <td class="col-duration">5.29</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/test_readsign.py::test_characters[123456123456123456]</td>
+          <td class="col-duration">5.37</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>
