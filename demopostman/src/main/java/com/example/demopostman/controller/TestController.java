@@ -53,7 +53,7 @@ public class TestController {
             Map<String,Object> m = new HashMap<>();
             m.put("id", 12);
             m.put("age", 20);
-            m.put("school","测试学校");
+            m.put("school","测试>>学校");
 
             // 将详细信息子Map放入主Map中
             map.put("detailInfo", m);

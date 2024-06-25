@@ -1,0 +1,796 @@
+{
+	"info": {
+		"_postman_id": "c2a32502-6e71-4d4c-9de3-df421286b6f0",
+		"name": "postman_test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36249548"
+	},
+	"item": [
+		{
+			"name": "read20",
+			"item": [
+				{
+					"name": "01",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"小米公司\".repeat(4))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后截取字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); // 获取响应的文本内容\r",
+									"\r",
+									"    // 定义一个正则表达式匹配标题标签\r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"\r",
+									"    // 使用正则表达式在响应文本中查找标题\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    // 断言：确保标题标签存在，并且内容符合预期\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1]).to.equal(ex_wd+\" - 搜索\"); \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"12345\".repeat(4))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后后截取字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); // 获取响应的文本内容\r",
+									"\r",
+									"    // 定义一个正则表达式匹配标题标签\r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"\r",
+									"    // 使用正则表达式在响应文本中查找标题\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    // 断言：确保标题标签存在，并且内容符合预期\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1]).to.equal(ex_wd+\" - 搜索\"); \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"12*-\".repeat(5))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后后截取字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1]).to.equal(ex_wd+\" - 搜索\"); \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"abcde\".repeat(5))\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后后截取字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1]).to.equal(ex_wd+\" - 搜索\"); \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"1234567890\".repeat(3))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后后截取字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1]).to.equal(ex_wd+\" - 搜索\"); \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "readsign",
+			"item": [
+				{
+					"name": "01",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"123456\".repeat(3))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20).replace(/>/g, '').replace(/</g, '')\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后截取字符忽略符号\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(ex_wd);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"as>df1fg\".repeat(3))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20).replace(/>/g, '').replace(/</g, '')"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后截取字符忽略符号\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(ex_wd);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"as>df1fg\".repeat(3))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20).replace(/>/g, '').replace(/</g, '')"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后截取字符忽略符号\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(ex_wd);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"as>df1fg\".repeat(3))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.substring(0, 20).replace(/>/g, '').replace(/</g, '')"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"点击搜索后截取字符忽略符号\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(ex_wd);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "import",
+			"item": [
+				{
+					"name": "01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"输入字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1].length).to.equal(ex_wd+5);\r",
+									"    pm.expect(match[1].length).to.most(100+5);\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"小米武汉\".repeat(10))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.length"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"输入字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1].length).to.equal(ex_wd+5);\r",
+									"    pm.expect(match[1].length).to.most(100+5);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"12345\".repeat(20))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.length"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"输入字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1].length).to.equal(ex_wd+5);\r",
+									"    pm.expect(match[1].length).to.most(100+5);\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"武汉小米\".repeat(26))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.length"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"输入字符是否超过20\", function () {\r",
+									"    var responseBody = pm.response.text(); \r",
+									"    var titleRegex = /<title>(.*?)<\\/title>/i;\r",
+									"    var match = responseBody.match(titleRegex);\r",
+									"\r",
+									"    pm.expect(match).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(match[1].length).to.equal(ex_wd+5);\r",
+									"    pm.expect(match[1].length).to.most(100+5);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"tempVar\", \"1234567890\".repeat(11))\r",
+									"\r",
+									"let tempValue = pm.variables.get(\"tempVar\");\r",
+									"\r",
+									"ex_wd = tempValue.length"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://www.bing.com/search?q={{tempVar}}",
+							"protocol": "https",
+							"host": [
+								"www",
+								"bing",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{tempVar}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

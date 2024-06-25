@@ -16,7 +16,7 @@ def driver():
 @pytest.mark.parametrize("special_string", [
     ("123456"*3),
     ("as>df1fg"*2),
-    ("as>df<fg"*3),
+    ("as>df<fg"*2),
     ("as>df<fg"*3),
 ])
 
